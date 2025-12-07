@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
@@ -8,6 +8,11 @@ import ManagerDashboard from "../dashboard/ManagerDashboard";
 import RecruiterDashboard from "../dashboard/RecruiterDashboard";
 import EmployeeDashboard from "../dashboard/EmployeeDashboard";
 import Recruitment from "../recruitment/Recruitment";
+import RecruitmentAI from "../recruitment/RecruitmentAI";
+
+
+
+
 
 const getDefaultNavId = (role) => {
   if (role === "MANAGEMENT_ADMIN") return "ADMIN_DASHBOARD";
@@ -20,8 +25,8 @@ const Layout = () => {
   const { role } = useAuth();
   const [activeNav, setActiveNav] = useState(() => getDefaultNavId(role));
 
-  // Reset active nav when role changes (e.g., on first load)
-  useMemo(() => {
+  // Reset active nav whenever role changes (e.g. login or "View As")
+  useEffect(() => {
     setActiveNav(getDefaultNavId(role));
   }, [role]);
 
@@ -76,8 +81,8 @@ const Layout = () => {
           return <div>[Recruiter – Job Positions Management Placeholder]</div>;
         case "RECRUITER_CANDIDATES":
           return <div>[Recruiter – Candidates List Placeholder]</div>;
-        case "RECRUITER_AI_SCREENING":
-          return <div>[Recruiter – AI Resume Screening Results Placeholder]</div>;
+        case "RECRUITER_AI":
+          return <RecruitmentAI />;
         case "RECRUITER_PIPELINES":
           return <div>[Recruiter – Pipelines / Kanban Placeholder]</div>;
         case "RECRUITER_REPORTS":

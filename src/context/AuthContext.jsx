@@ -1,74 +1,99 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { auth } from "../firebase";
-
-// Email → base role (fallback when no override is selected)
-const deriveBaseRole = (email) => {
-  if (!email) return "EMPLOYEE";
-  const lower = email.toLowerCase();
-
-  if (lower.includes("admin")) return "MANAGEMENT_ADMIN";
-  if (lower.includes("manager") || lower.includes("lead")) return "SENIOR_MANAGER";
-  if (lower.includes("hr") || lower.includes("recruit")) return "HR_RECRUITER";
-
-  return "EMPLOYEE";
-};
+import api from "../services/api";
 
 const AuthContext = createContext(undefined);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-
-  // Role that comes from email / backend
-  const [baseRole, setBaseRole] = useState(null);
-
-  // UI override for testing (MANAGEMENT_ADMIN / SENIOR_MANAGER / HR_RECRUITER / EMPLOYEE)
-  const [overrideRole, setOverrideRole] = useState(null);
-
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // ✅ Check if user is already logged in on app load
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
+    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("authToken");
 
-      if (firebaseUser?.email) {
-        const derived = deriveBaseRole(firebaseUser.email);
-        setBaseRole(derived);
-      } else {
-        setBaseRole(null);
+    if (storedUser && storedToken) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error("Error parsing stored user:", e);
+        localStorage.removeItem("user");
+        localStorage.removeItem("authToken");
       }
-
-      // keep overrideRole as-is; this is user-selected in UI
-      setLoading(false);
-    });
-
-    return () => unsub();
+    }
+    setLoading(false);
   }, []);
 
+  // ✅ Login using backend API (NOT Firebase)
   const login = async (email, password) => {
-    await signInWithEmailAndPassword(auth, email, password);
+    try {
+      setError(null);
+      setLoading(true);
+
+      console.log("🔄 Attempting login with:", email); // Debug
+
+      // ✅ Call YOUR backend login endpoint
+      const response = await api.post("/api/auth/login", {
+        email,
+        password
+      });
+
+      console.log("✅ Login response:", response.data); // Debug
+
+      // ✅ Extract token and user from backend response
+      const { token, user: backendUser } = response.data;
+
+      if (!token || !backendUser) {
+        throw new Error("Invalid response from backend");
+      }
+
+      // ✅ Store in localStorage
+      localStorage.setItem("authToken", token);
+      localStorage.setItem("user", JSON.stringify(backendUser));
+
+      // ✅ Update state
+      setUser(backendUser);
+
+      return response.data;
+    } catch (err) {
+      console.error("❌ Login error:", err); // Debug
+      const errorMsg = err.response?.data?.error || err.message || "Login failed";
+      setError(errorMsg);
+      throw new Error(errorMsg);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // ✅ Logout
   const logout = async () => {
-    await signOut(auth);
-    setOverrideRole(null); // clear override on logout
+    try {
+      await api.post("/api/auth/logout");
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("user");
+      setUser(null);
+      window.location.href = "/login";
+    }
   };
-
-  // Effective role used by the rest of the app
-  const role = overrideRole || baseRole;
 
   const value = {
-    user,
-    role,
-    baseRole,        // optional: if you want to show what backend thinks
-    overrideRole,
-    setOverrideRole, // we'll use this in the header dropdown
+    user,              // Backend user object { id, email, role, scope }
+    role: user?.role,  // User's role from backend
     loading,
+    error,
     login,
     logout,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {

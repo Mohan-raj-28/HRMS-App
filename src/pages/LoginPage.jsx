@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
-  const { login } = useAuth();
+  const { login, error: authError } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -16,11 +16,12 @@ const LoginPage = () => {
     setError(null);
     setSubmitting(true);
     try {
+      // ✅ This calls the backend login via AuthContext
       await login(email, password);
       navigate("/dashboard");
     } catch (err) {
-      console.error(err);
-      setError("Invalid credentials or authentication error.");
+      console.error("Login error:", err);
+      setError(err.message || "Login failed");
     } finally {
       setSubmitting(false);
     }
@@ -91,7 +92,7 @@ const LoginPage = () => {
                 border: "1px solid #d1d5db",
                 fontSize: "0.9rem",
               }}
-              placeholder="you@company.com"
+              placeholder="admin@company.com"
             />
           </div>
           <div>
@@ -114,11 +115,11 @@ const LoginPage = () => {
                 border: "1px solid #d1d5db",
                 fontSize: "0.9rem",
               }}
-              placeholder="Enter your password"
+              placeholder="password123"
             />
           </div>
 
-          {error && (
+          {(error || authError) && (
             <div
               style={{
                 fontSize: "0.8rem",
@@ -128,7 +129,7 @@ const LoginPage = () => {
                 padding: "0.5rem 0.75rem",
               }}
             >
-              {error}
+              {error || authError}
             </div>
           )}
 
@@ -151,6 +152,9 @@ const LoginPage = () => {
             {submitting ? "Signing in..." : "Sign In"}
           </button>
         </form>
+
+        {/* Test Credentials Info */}
+       
       </div>
     </div>
   );

@@ -2,86 +2,152 @@ import React from "react";
 import { useAuth } from "../../context/AuthContext";
 
 const Header = () => {
-  const { user, role, baseRole, overrideRole, setOverrideRole, logout } = useAuth();
+  const { user, logout } = useAuth();
 
-  const handleRoleChange = (e) => {
-    const value = e.target.value;
-    // empty string → clear override → fall back to baseRole
-    setOverrideRole(value === "" ? null : value);
+  // ✅ Different header content based on role
+  const getHeaderContent = () => {
+    switch (user?.role) {
+      case "MANAGEMENT_ADMIN":
+        return {
+          title: "Admin Dashboard",
+          subtitle: "System Management & Controls",
+          bgColor: "#1e293b",
+          accent: "#ef4444",
+        };
+      case "SENIOR_MANAGER":
+        return {
+          title: "Manager Dashboard",
+          subtitle: "Team & Performance Management",
+          bgColor: "#1e40af",
+          accent: "#3b82f6",
+        };
+      case "HR_RECRUITER":
+        return {
+          title: "Recruiter Dashboard",
+          subtitle: "Recruitment & Candidate Pipeline",
+          bgColor: "#7c3aed",
+          accent: "#a78bfa",
+        };
+      case "EMPLOYEE":
+        return {
+          title: "Employee Dashboard",
+          subtitle: "Personal Data & Leave Management",
+          bgColor: "#059669",
+          accent: "#10b981",
+        };
+      default:
+        return {
+          title: "HRMS",
+          subtitle: "Human Resource Management System",
+          bgColor: "#1d4ed8",
+          accent: "#3b82f6",
+        };
+    }
   };
+
+  const headerContent = getHeaderContent();
 
   return (
     <header
       style={{
-        height: "60px",
+        background: `linear-gradient(135deg, ${headerContent.bgColor} 0%, ${headerContent.accent} 100%)`,
+        color: "#ffffff",
+        padding: "1.5rem 2rem",
         display: "flex",
-        alignItems: "center",
         justifyContent: "space-between",
-        padding: "0 1.5rem",
-        borderBottom: "1px solid #e5e7eb",
-        background: "#ffffff",
+        alignItems: "center",
+        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
       }}
     >
-      {/* Left: Logo + App name */}
-      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-        <div
+      {/* Left side - Title & Subtitle */}
+      <div>
+        <h1 style={{ fontSize: "1.75rem", fontWeight: 700, margin: 0 }}>
+          {headerContent.title}
+        </h1>
+        <p
           style={{
-            width: "36px",
-            height: "36px",
-            borderRadius: "50%",
-            background: "#1d4ed8",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#fff",
-            fontWeight: 700,
+            fontSize: "0.9rem",
+            margin: "0.25rem 0 0 0",
+            opacity: 0.9,
           }}
         >
-          H
-        </div>
-        <div>
-          <div style={{ fontWeight: 700 }}>HRMS</div>
-          <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>
-            Smart Talent & Employee Hub
-          </div>
-        </div>
+          {headerContent.subtitle}
+        </p>
       </div>
 
-      {/* Right: user + role switcher + logout */}
-      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-        {/* User info */}
-        <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: "0.85rem", fontWeight: 600 }}>
-            {user?.email ?? "Guest"}
+      {/* Right side - User Info & Logout */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "1.5rem",
+        }}
+      >
+        {/* User Info */}
+        <div
+          style={{
+            textAlign: "right",
+            borderRight: "1px solid rgba(255,255,255,0.3)",
+            paddingRight: "1.5rem",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "0.9rem",
+              fontWeight: 600,
+              marginBottom: "0.25rem",
+            }}
+          >
+            {user?.email}
           </div>
-          <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>
-            Role: {role ?? "UNASSIGNED"}
+          <div
+            style={{
+              fontSize: "0.8rem",
+              opacity: 0.85,
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+            }}
+          >
+            {user?.role?.replace(/_/g, " ")}
           </div>
-          {baseRole && overrideRole && (
-            <div style={{ fontSize: "0.7rem", color: "#9ca3af" }}>
-              Base: {baseRole}
+          {user?.scope?.department && (
+            <div
+              style={{
+                fontSize: "0.75rem",
+                opacity: 0.75,
+                marginTop: "0.25rem",
+              }}
+            >
+              {user.scope.department}
             </div>
           )}
         </div>
 
-        {/* Role switcher + Logout */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <select
-            value={overrideRole || ""}
-            onChange={handleRoleChange}
-            className="role-dropdown"
-          >
-            <option value="">Role: Auto ({baseRole || "none"})</option>
-            <option value="MANAGEMENT_ADMIN">Management Admin</option>
-            <option value="SENIOR_MANAGER">Senior Manager</option>
-            <option value="HR_RECRUITER">HR Recruiter</option>
-            <option value="EMPLOYEE">Employee</option>
-          </select>
-
-          <button onClick={logout} className="logout-btn">
-            Logout
-          </button>
-        </div>
+        {/* Logout Button */}
+        <button
+          onClick={logout}
+          style={{
+            background: "rgba(255,255,255,0.2)",
+            border: "1px solid rgba(255,255,255,0.3)",
+            color: "#ffffff",
+            padding: "0.6rem 1.2rem",
+            borderRadius: "0.5rem",
+            cursor: "pointer",
+            fontSize: "0.9rem",
+            fontWeight: 600,
+            transition: "all 0.2s ease",
+          }}
+          onMouseOver={(e) => {
+            e.target.style.background = "rgba(255,255,255,0.3)";
+            e.target.style.borderColor = "rgba(255,255,255,0.5)";
+          }}
+          onMouseOut={(e) => {
+            e.target.style.background = "rgba(255,255,255,0.2)";
+            e.target.style.borderColor = "rgba(255,255,255,0.3)";
+          }}
+        >
+          Logout
+        </button>
       </div>
     </header>
   );
