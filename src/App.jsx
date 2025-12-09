@@ -9,6 +9,8 @@ import ManagerDashboard from "./components/dashboard/ManagerDashboard";
 import RecruiterDashboard from "./components/dashboard/RecruiterDashboard";
 import EmployeeDashboard from "./components/dashboard/EmployeeDashboard";
 
+
+
 function App() {
   return (
     <BrowserRouter>
@@ -58,6 +60,9 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+         
+          
 
           {/* ✅ Redirect to dashboard by default */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />

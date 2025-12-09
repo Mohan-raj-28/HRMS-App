@@ -1,61 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useAuth } from "../../context/AuthContext";
-import api from "../../services/api";
 
 const EmployeeDashboard = () => {
   const { user } = useAuth();
-  const [profile, setProfile] = useState(null);
-  const [leaveBalance, setLeaveBalance] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  // Basic derived values from auth (fallbacks for local dev)
+  const displayName = user?.email?.split("@")[0] || "Employee";
+  const email = user?.email || "employee@company.com";
+  const department = user?.scope?.department || "Engineering";
+  const team = user?.scope?.team || "Product Team";
+  const role = user?.role?.replace(/_/g, " ") || "Software Engineer";
 
-        // ✅ Fetch employee profile
-        const profileRes = await api.get("/api/employee/profile");
-        setProfile(profileRes.data.data);
-
-        // ✅ Fetch leave balance
-        const leaveRes = await api.get("/api/employee/leave-balance");
-        setLeaveBalance(leaveRes.data.data);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setError(err.response?.data?.error || "Failed to load data");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  if (loading) {
-    return (
-      <div style={{ padding: "2rem", textAlign: "center" }}>
-        <p>Loading your profile...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div
-        style={{
-          padding: "2rem",
-          background: "#fee2e2",
-          color: "#991b1b",
-          borderRadius: "0.5rem",
-          margin: "1rem",
-        }}
-      >
-        ❌ Error: {error}
-      </div>
-    );
-  }
+  // Static/mock leave balance
+  const leaveBalance = {
+    annualLeave: 18,
+    sickLeave: 10,
+    casualLeave: 6,
+  };
 
   return (
     <div style={{ padding: "2rem", background: "#f9fafb", minHeight: "100vh" }}>
@@ -93,10 +54,16 @@ const EmployeeDashboard = () => {
           </div>
           <div>
             <h1 style={{ fontSize: "1.75rem", fontWeight: 700, margin: 0 }}>
-              {user?.email?.split("@")[0] || "Employee"}
+              {displayName}
             </h1>
-            <p style={{ fontSize: "0.95rem", margin: "0.5rem 0 0 0", opacity: 0.9 }}>
-              {user?.email}
+            <p
+              style={{
+                fontSize: "0.95rem",
+                margin: "0.5rem 0 0 0",
+                opacity: 0.9,
+              }}
+            >
+              {email}
             </p>
           </div>
         </div>
@@ -112,20 +79,16 @@ const EmployeeDashboard = () => {
           <div>
             <div style={{ fontSize: "0.85rem", opacity: 0.9 }}>Department</div>
             <div style={{ fontSize: "1.1rem", fontWeight: 600 }}>
-              {user?.scope?.department || "N/A"}
+              {department}
             </div>
           </div>
           <div>
             <div style={{ fontSize: "0.85rem", opacity: 0.9 }}>Team</div>
-            <div style={{ fontSize: "1.1rem", fontWeight: 600 }}>
-              {user?.scope?.team || "N/A"}
-            </div>
+            <div style={{ fontSize: "1.1rem", fontWeight: 600 }}>{team}</div>
           </div>
           <div>
             <div style={{ fontSize: "0.85rem", opacity: 0.9 }}>Role</div>
-            <div style={{ fontSize: "1.1rem", fontWeight: 600 }}>
-              {user?.role?.replace(/_/g, " ")}
-            </div>
+            <div style={{ fontSize: "1.1rem", fontWeight: 600 }}>{role}</div>
           </div>
         </div>
       </div>
@@ -148,13 +111,27 @@ const EmployeeDashboard = () => {
             borderLeft: "4px solid #3b82f6",
           }}
         >
-          <div style={{ fontSize: "0.85rem", color: "#6b7280", marginBottom: "0.5rem" }}>
+          <div
+            style={{
+              fontSize: "0.85rem",
+              color: "#6b7280",
+              marginBottom: "0.5rem",
+            }}
+          >
             Attendance Rate
           </div>
-          <div style={{ fontSize: "2rem", fontWeight: 700, color: "#1f2937" }}>
+          <div
+            style={{ fontSize: "2rem", fontWeight: 700, color: "#1f2937" }}
+          >
             95%
           </div>
-          <div style={{ fontSize: "0.75rem", color: "#9ca3af", marginTop: "0.5rem" }}>
+          <div
+            style={{
+              fontSize: "0.75rem",
+              color: "#9ca3af",
+              marginTop: "0.5rem",
+            }}
+          >
             This month
           </div>
         </div>
@@ -168,13 +145,27 @@ const EmployeeDashboard = () => {
             borderLeft: "4px solid #10b981",
           }}
         >
-          <div style={{ fontSize: "0.85rem", color: "#6b7280", marginBottom: "0.5rem" }}>
+          <div
+            style={{
+              fontSize: "0.85rem",
+              color: "#6b7280",
+              marginBottom: "0.5rem",
+            }}
+          >
             Performance
           </div>
-          <div style={{ fontSize: "2rem", fontWeight: 700, color: "#1f2937" }}>
+          <div
+            style={{ fontSize: "2rem", fontWeight: 700, color: "#1f2937" }}
+          >
             4.5/5
           </div>
-          <div style={{ fontSize: "0.75rem", color: "#9ca3af", marginTop: "0.5rem" }}>
+          <div
+            style={{
+              fontSize: "0.75rem",
+              color: "#9ca3af",
+              marginTop: "0.5rem",
+            }}
+          >
             Last review
           </div>
         </div>
@@ -188,90 +179,144 @@ const EmployeeDashboard = () => {
             borderLeft: "4px solid #f59e0b",
           }}
         >
-          <div style={{ fontSize: "0.85rem", color: "#6b7280", marginBottom: "0.5rem" }}>
+          <div
+            style={{
+              fontSize: "0.85rem",
+              color: "#6b7280",
+              marginBottom: "0.5rem",
+            }}
+          >
             Projects
           </div>
-          <div style={{ fontSize: "2rem", fontWeight: 700, color: "#1f2937" }}>
+          <div
+            style={{ fontSize: "2rem", fontWeight: 700, color: "#1f2937" }}
+          >
             3
           </div>
-          <div style={{ fontSize: "0.75rem", color: "#9ca3af", marginTop: "0.5rem" }}>
+          <div
+            style={{
+              fontSize: "0.75rem",
+              color: "#9ca3af",
+              marginTop: "0.5rem",
+            }}
+          >
             Active projects
           </div>
         </div>
       </div>
 
-      {/* Leave Balance */}
-      {leaveBalance && (
-        <div
+      {/* Leave Balance (static) */}
+      <div
+        style={{
+          background: "#ffffff",
+          padding: "1.5rem",
+          borderRadius: "0.75rem",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          marginBottom: "2rem",
+        }}
+      >
+        <h2
           style={{
-            background: "#ffffff",
-            padding: "1.5rem",
-            borderRadius: "0.75rem",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-            marginBottom: "2rem",
+            fontSize: "1.25rem",
+            fontWeight: 700,
+            margin: "0 0 1rem 0",
           }}
         >
-          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, margin: "0 0 1rem 0" }}>
-            Leave Balance
-          </h2>
+          Leave Balance
+        </h2>
 
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+            gap: "1rem",
+          }}
+        >
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-              gap: "1rem",
+              padding: "1rem",
+              background: "#f0fdf4",
+              borderRadius: "0.5rem",
+              border: "1px solid #dcfce7",
             }}
           >
             <div
               style={{
-                padding: "1rem",
-                background: "#f0fdf4",
-                borderRadius: "0.5rem",
-                border: "1px solid #dcfce7",
+                fontSize: "0.85rem",
+                color: "#166534",
+                marginBottom: "0.5rem",
               }}
             >
-              <div style={{ fontSize: "0.85rem", color: "#166534", marginBottom: "0.5rem" }}>
-                Annual Leave
-              </div>
-              <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#166534" }}>
-                {leaveBalance?.annualLeave || 18} days
-              </div>
+              Annual Leave
             </div>
-
             <div
               style={{
-                padding: "1rem",
-                background: "#fef3c7",
-                borderRadius: "0.5rem",
-                border: "1px solid #fde68a",
+                fontSize: "1.5rem",
+                fontWeight: 700,
+                color: "#166534",
               }}
             >
-              <div style={{ fontSize: "0.85rem", color: "#92400e", marginBottom: "0.5rem" }}>
-                Sick Leave
-              </div>
-              <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#92400e" }}>
-                {leaveBalance?.sickLeave || 10} days
-              </div>
+              {leaveBalance.annualLeave} days
             </div>
+          </div>
 
+          <div
+            style={{
+              padding: "1rem",
+              background: "#fef3c7",
+              borderRadius: "0.5rem",
+              border: "1px solid #fde68a",
+            }}
+          >
             <div
               style={{
-                padding: "1rem",
-                background: "#dbeafe",
-                borderRadius: "0.5rem",
-                border: "1px solid #bfdbfe",
+                fontSize: "0.85rem",
+                color: "#92400e",
+                marginBottom: "0.5rem",
               }}
             >
-              <div style={{ fontSize: "0.85rem", color: "#1e40af", marginBottom: "0.5rem" }}>
-                Casual Leave
-              </div>
-              <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#1e40af" }}>
-                {leaveBalance?.casualLeave || 6} days
-              </div>
+              Sick Leave
+            </div>
+            <div
+              style={{
+                fontSize: "1.5rem",
+                fontWeight: 700,
+                color: "#92400e",
+              }}
+            >
+              {leaveBalance.sickLeave} days
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: "1rem",
+              background: "#dbeafe",
+              borderRadius: "0.5rem",
+              border: "1px solid #bfdbfe",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "0.85rem",
+                color: "#1e40af",
+                marginBottom: "0.5rem",
+              }}
+            >
+              Casual Leave
+            </div>
+            <div
+              style={{
+                fontSize: "1.5rem",
+                fontWeight: 700,
+                color: "#1e40af",
+              }}
+            >
+              {leaveBalance.casualLeave} days
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Recent Activities */}
       <div
@@ -282,7 +327,13 @@ const EmployeeDashboard = () => {
           boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
         }}
       >
-        <h2 style={{ fontSize: "1.25rem", fontWeight: 700, margin: "0 0 1rem 0" }}>
+        <h2
+          style={{
+            fontSize: "1.25rem",
+            fontWeight: 700,
+            margin: "0 0 1rem 0",
+          }}
+        >
           Recent Activities
         </h2>
 
@@ -295,10 +346,22 @@ const EmployeeDashboard = () => {
               borderLeft: "4px solid #3b82f6",
             }}
           >
-            <div style={{ fontSize: "0.9rem", fontWeight: 600, color: "#1f2937" }}>
+            <div
+              style={{
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                color: "#1f2937",
+              }}
+            >
               ✓ Attendance Marked
             </div>
-            <div style={{ fontSize: "0.8rem", color: "#6b7280", marginTop: "0.25rem" }}>
+            <div
+              style={{
+                fontSize: "0.8rem",
+                color: "#6b7280",
+                marginTop: "0.25rem",
+              }}
+            >
               Today at 09:00 AM
             </div>
           </div>
@@ -311,10 +374,22 @@ const EmployeeDashboard = () => {
               borderLeft: "4px solid #10b981",
             }}
           >
-            <div style={{ fontSize: "0.9rem", fontWeight: 600, color: "#1f2937" }}>
+            <div
+              style={{
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                color: "#1f2937",
+              }}
+            >
               ✓ Performance Review Completed
             </div>
-            <div style={{ fontSize: "0.8rem", color: "#6b7280", marginTop: "0.25rem" }}>
+            <div
+              style={{
+                fontSize: "0.8rem",
+                color: "#6b7280",
+                marginTop: "0.25rem",
+              }}
+            >
               Last month
             </div>
           </div>
@@ -327,10 +402,22 @@ const EmployeeDashboard = () => {
               borderLeft: "4px solid #f59e0b",
             }}
           >
-            <div style={{ fontSize: "0.9rem", fontWeight: 600, color: "#1f2937" }}>
+            <div
+              style={{
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                color: "#1f2937",
+              }}
+            >
               📧 Leave Request Approved
             </div>
-            <div style={{ fontSize: "0.8rem", color: "#6b7280", marginTop: "0.25rem" }}>
+            <div
+              style={{
+                fontSize: "0.8rem",
+                color: "#6b7280",
+                marginTop: "0.25rem",
+              }}
+            >
               2 weeks ago
             </div>
           </div>
